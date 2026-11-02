@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SparkMaster Pro - Electrical Training & Trivia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 font-sans antialiased min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-slate-900 border-b border-slate-800 sticky top-0 z-50">
+        <div class="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-amber-500 text-slate-950 font-black px-3 py-1.5 rounded-lg text-lg tracking-wider">⚡ SPARK</div>
+                <div>
+                    <h1 class="font-bold text-base leading-tight">SparkMaster Pro</h1>
+                    <p class="text-xs text-slate-400">Commercial & Residential Training Hub</p>
+                </div>
+            </div>
+            <div class="flex space-x-2">
+                <button onclick="switchTab('learn')" id="btn-learn" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-amber-500 text-slate-950 transition">Field Guide</button>
+                <button onclick="switchTab('quiz')" id="btn-quiz" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition">Daily Quiz</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto px-4 py-6 flex-1 w-full">
+
+        <!-- LEARN / FIELD GUIDE TAB -->
+        <section id="tab-learn" class="space-y-6">
+            <div class="flex gap-2 border-b border-slate-800 pb-3 overflow-x-auto">
+                <button onclick="filterCategory('all')" class="cat-btn px-3 py-1 text-xs rounded-full bg-amber-500 text-slate-950 font-medium whitespace-nowrap">All Systems</button>
+                <button onclick="filterCategory('commercial')" class="cat-btn px-3 py-1 text-xs rounded-full bg-slate-800 text-slate-300 font-medium whitespace-nowrap hover:bg-slate-700">Commercial</button>
+                <button onclick="filterCategory('residential')" class="cat-btn px-3 py-1 text-xs rounded-full bg-slate-800 text-slate-300 font-medium whitespace-nowrap hover:bg-slate-700">Residential</button>
+                <button onclick="filterCategory('safety')" class="cat-btn px-3 py-1 text-xs rounded-full bg-slate-800 text-slate-300 font-medium whitespace-nowrap hover:bg-slate-700">Safety & LOTO</button>
+            </div>
+
+            <div id="guides-container" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Dynamically populated guide cards -->
+            </div>
+        </section>
+
+        <!-- QUIZ TAB -->
+        <section id="tab-quiz" class="hidden space-y-6 max-w-xl mx-auto">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xl">
+                <div class="flex justify-between items-center mb-4">
+                    <span id="quiz-progress" class="text-xs font-semibold tracking-wider text-amber-400 uppercase">Question 1 of 5</span>
+                    <span id="quiz-score" class="text-xs font-medium text-slate-400">Score: 0</span>
+                </div>
+                
+                <div id="quiz-card-container">
+                    <!-- Question Image -->
+                    <div class="rounded-xl overflow-hidden mb-4 bg-slate-950 border border-slate-800 h-48 flex items-center justify-center relative">
+                        <img id="quiz-img" src="" alt="Quiz visual" class="w-full h-full object-cover">
+                        <div class="absolute bottom-2 right-2 bg-slate-950/80 px-2 py-1 rounded text-[10px] text-slate-300 uppercase font-mono tracking-widest border border-slate-700" id="quiz-badge">Field Test</div>
+                    </div>
+
+                    <!-- Question Text -->
+                    <h2 id="quiz-question" class="text-base font-semibold mb-4 text-slate-100">Loading question...</h2>
+
+                    <!-- Options Grid -->
+                    <div id="quiz-options" class="grid grid-cols-1 gap-2.5 mb-4">
+                        <!-- Options injected here -->
+                    </div>
+
+                    <!-- Explanation Box -->
+                    <div id="quiz-explanation" class="hidden p-3.5 rounded-xl bg-slate-950 border border-slate-800 text-xs text-slate-300 mb-4">
+                        <span class="font-bold text-amber-400 block mb-1">💡 Field Breakdown:</span>
+                        <p id="explanation-text"></p>
+                    </div>
+
+                    <button id="next-btn" onclick="nextQuestion()" class="hidden w-full py-2.5 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold rounded-xl transition text-sm">
+                        Next Challenge ➔
+                    </button>
+                </div>
+
+                <div id="quiz-complete" class="hidden text-center py-8 space-y-4">
+                    <div class="text-4xl">⚡</div>
+                    <h3 class="text-lg font-bold">Quiz Completed!</h3>
+                    <p id="final-score-text" class="text-sm text-slate-400">You scored 5 out of 5 like a Master Electrician.</p>
+                    <button onclick="restartQuiz()" class="px-6 py-2.5 bg-amber-500 text-slate-950 font-bold rounded-xl text-sm">Retake Quiz</button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Detail Modal -->
+    <div id="detail-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-2xl">
+            <div class="flex justify-between items-start">
+                <span id="modal-category" class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md bg-amber-500/10 text-amber-400 border border-amber-500/20"></span>
+                <button onclick="closeModal()" class="text-slate-400 hover:text-white p-1">✕</button>
+            </div>
+            <h2 id="modal-title" class="text-lg font-bold text-slate-100"></h2>
+            <div class="rounded-xl overflow-hidden bg-slate-950 h-52 border border-slate-800">
+                <img id="modal-img" src="" alt="" class="w-full h-full object-cover">
+            </div>
+            <div id="modal-content" class="text-xs text-slate-300 space-y-3 leading-relaxed">
+                <!-- Detailed steps inserted here -->
+            </div>
+            <button onclick="closeModal()" class="w-full py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold rounded-xl text-xs transition">Close Guide</button>
+        </div>
+    </div>
+
+    <script>
+        const trainingData = [
+            {
+                id: 1,
+                category: "commercial",
+                title: "Bus Duct & Feeder Busway Installation",
+                badge: "Commercial",
+                image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80",
+                summary: "High-capacity distribution system used in data centers and high-rises to handle massive amperage.",
+                steps: [
+                    "**1. Structural Alignment & Supports:** Install spring hangers and trapeze supports strictly according to engineering load specs every 5 feet.",
+                    "**2. Joint Connection & Torque:** Slide joint packs evenly. Use a calibrated torque wrench to tighten bolts to manufacturer specifications (typically 45-50 ft-lbs) to prevent hot spots.",
+                    "**3. Megger Insulation Testing:** Perform insulation resistance testing (Megger) phase-to-phase and phase-to-ground before energization.",
+                    "*Verification:* Resistance values must exceed minimum NEC/IEEE standards before sign-off."
+                ]
+            },
+            {
+                id: 2,
+                category: "safety",
+                title: "Live-Dead-Live LOTO Verification",
+                badge: "Safety Protocol",
+                image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80",
+                summary: "The fundamental OSHA-compliant sequence to verify zero energy state before working on equipment.",
+                steps: [
+                    "**1. Test Meter on Known Live Source:** Verify your multimeter/voltage tester reads correctly on a known energized circuit.",
+                    "**2. Test Target Circuit:** Test phase-to-phase and phase-to-ground on the de-energized circuit to confirm zero potential.",
+                    "**3. Re-verify Meter:** Test the meter again on a known live source to ensure meter didn't fail internally during testing.",
+                    "*Verification:* Absolute confirmation of dead circuit prior to locking out."
+                ]
+            },
+            {
+                id: 3,
+                category: "residential",
+                title: "Main Service Panel Upgrade & Bonding",
+                badge: "Residential",
+                image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80",
+                summary: "Replacing legacy 100A panels with 200A main breaker panels, grounding electrodes, and bonding.",
+                steps: [
+                    "**1. Coordinate Utility Disconnect:** Schedule power drop with local utility provider and pull required municipal permits.",
+                    "**2. Mount Panel & Conduit Hubs:** Secure enclosure rigidly to studs and install weatherhead/mast assemblies for overhead feeds.",
+                    "**3. Grounding & Bonding:** Install #4 AWG copper jumper to water service and ground rods; ensure neutral and ground bars are isolated or bonded correctly per NEC 250.",
+                    "*Verification:* Inspect torque on all breaker lugs and verify main bonding jumper continuity."
+                ]
+            },
+            {
+                id: 4,
+                category: "commercial",
+                title: "Data Center ATS & Emergency Generator Tie-in",
+                badge: "Commercial",
+                image: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80",
+                summary: "Automatic Transfer Switch installation ensuring seamless backup power transition for critical loads.",
+                steps: [
+                    "**1. Physical Placement & Seismic Anchoring:** Position ATS enclosure in electrical room and secure with heavy-duty seismic anchors.",
+                    "**2. Power & Control Wiring:** Run utility feed, generator feed, and load lines into cabinet maintaining proper bending radius.",
+                    "**3. Control Logic & Communication Test:** Program transfer delays, voltage drop thresholds, and exercise timers; perform simulated blackouts.",
+                    "*Verification:* Automatic transfer sequence completes successfully under load test."
+                ]
+            }
+        ];
+
+        const quizData = [
+            {
+                question: "What is this heavy-duty metal enclosure system containing parallel copper busbars primarily called?",
+                image: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?auto=format&fit=crop&w=800&q=80",
+                badge: "Commercial",
+                options: [
+                    "Cable Tray",
+                    "Bus Duct (Busway)",
+                    "Rigid Steel Conduit",
+                    "Wireway Wirebasket"
+                ],
+                correct: 1,
+                explanation: "A Bus Duct (or busway) is an efficient prefabricated electrical distribution system containing copper or aluminum busbars supported by insulators inside a protective metal housing."
+            },
+            {
+                question: "According to OSHA and NFPA 70E, what is the correct final step of a 'Live-Dead-Live' voltage test?",
+                image: "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800&q=80",
+                badge: "Safety Protocol",
+                options: [
+                    "Lock out the breaker and walk away",
+                    "Test the meter again on a known live source to verify tester functionality",
+                    "Check insulation resistance with a Megger",
+                    "Verify phase rotation with a meter"
+                ],
+                correct: 1,
+                explanation: "Re-testing your meter on a known live source ensures that your test instrument didn't fail internally while you were taking voltage measurements."
+            },
+            {
+                question: "In commercial electrical design, what device is used to automatically switch critical loads between utility power and backup generator power?",
+                image: "https://images.unsplash.com/photo-1544717305-2782549b5136?auto=format&fit=crop&w=800&q=80",
+                badge: "Commercial",
+                options: [
+                    "Ground Fault Circuit Interrupter (GFCI)",
+                    "Automatic Transfer Switch (ATS)",
+                    "Current Transformer (CT)",
+                    "Surge Protective Device (SPD)"
+                ],
+                correct: 1,
+                explanation: "An Automatic Transfer Switch (ATS) monitors utility voltage and seamlessly shifts power to an emergency generator when a primary outage occurs."
+            },
+            {
+                question: "When terminating aluminum feeder conductors in commercial panels, what essential step must be performed to prevent oxidation and high-resistance connections?",
+                image: "https://images.unsplash.com/photo-1621905251189-08b45d6a269e?auto=format&fit=crop&w=800&q=80",
+                badge: "Residential / Commercial",
+                options: [
+                    "Apply antioxidant joint compound and wire-brush conductors",
+                    "Solder the wire ends together before lug insertion",
+                    "Wrap the conductors in electrical tape",
+                    "Soak the cable ends in mineral oil"
+                ],
+                correct: 0,
+                explanation: "Applying an approved antioxidant compound prevents aluminum oxide formation, which creates high resistance, excessive heat, and potential failure."
+            },
+            {
+                question: "What testing instrument is specifically used to verify high-voltage insulation integrity (megohm range) on feeder cables before energization?",
+                image: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?auto=format&fit=crop&w=800&q=80",
+                badge: "Testing & QA/QC",
+                options: [
+                    "Standard Digital Multimeter",
+                    "Clamp-on Ammeter",
+                    "Insulation Resistance Tester (Megger)",
+                    "Phase Rotation Meter"
+                ],
+                correct: 2,
+                explanation: "A Megger injects high DC test voltage (e.g., 1000V) to measure insulation resistance in megaohms, verifying that cable jackets and insulation have no breakdown or damage."
+            }
+        ];
+
+        let currentQuizIndex = 0;
+        let score = 0;
+        let selectedAnswerIndex = null;
+
+        function initApp() {
+            renderGuides('all');
+            setupQuiz();
+        }
+
+        function switchTab(tab) {
+            const learnSec = document.getElementById('tab-learn');
+            const quizSec = document.getElementById('tab-quiz');
+            const btnLearn = document.getElementById('btn-learn');
+            const btnQuiz = document.getElementById('btn-quiz');
+
+            if(tab === 'learn') {
+                learnSec.classList.remove('hidden');
+                quizSec.classList.add('hidden');
+                btnLearn.className = "px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-amber-500 text-slate-950 transition";
+                btnQuiz.className = "px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition";
+            } else {
+                learnSec.classList.add('hidden');
+                quizSec.classList.remove('hidden');
+                btnQuiz.className = "px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-amber-500 text-slate-950 transition";
+                btnLearn.className = "px-3.5 py-1.5 text-xs font-semibold rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 transition";
+            }
+        }
+
+        function filterCategory(cat) {
+            document.querySelectorAll('.cat-btn').forEach(btn => {
+                btn.className = "cat-btn px-3 py-1 text-xs rounded-full bg-slate-800 text-slate-300 font-medium whitespace-nowrap hover:bg-slate-700";
+            });
+            event.target.className = "cat-btn px-3 py-1 text-xs rounded-full bg-amber-500 text-slate-950 font-medium whitespace-nowrap";
+            renderGuides(cat);
+        }
+
+        function renderGuides(category) {
+            const container = document.getElementById('guides-container');
+            container.innerHTML = '';
+            
+            const filtered = category === 'all' ? trainingData : trainingData.filter(item => item.category === category);
+
+            filtered.forEach(item => {
+                const card = document.createElement('div');
+                card.className = "bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden hover:border-slate-700 transition flex flex-col justify-between cursor-pointer group";
+                card.onclick = () => openModal(item.id);
+                card.innerHTML = `
+                    <div>
+                        <div class="h-40 overflow-hidden relative bg-slate-950">
+                            <img src="${item.image}" alt="${item.title}" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+                            <span class="absolute top-2.5 left-2.5 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-md bg-slate-950/80 text-amber-400 border border-slate-700">${item.badge}</span>
+                        </div>
+                        <div class="p-4 space-y-2">
+                            <h3 class="font-bold text-sm text-slate-100 group-hover:text-amber-400 transition">${item.title}</h3>
+                            <p class="text-xs text-slate-400 line-clamp-2">${item.summary}</p>
+                        </div>
+                    </div>
+                    <div class="px-4 pb-4 pt-0">
+                        <span class="text-xs font-semibold text-amber-400 flex items-center gap-1">Open Step-by-Step Guide ➔</span>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openModal(id) {
+            const item = trainingData.find(d => d.id === id);
+            if(!item) return;
+
+            document.getElementById('modal-category').innerText = item.badge;
+            document.getElementById('modal-title').innerText = item.title;
+            document.getElementById('modal-img').src = item.image;
+            
+            let contentHtml = `<p class="text-slate-300 font-medium mb-3">${item.summary}</p><div class="space-y-2.5">`;
+            item.steps.forEach(step => {
+                contentHtml += `<div class="p-3 rounded-xl bg-slate-950 border border-slate-800 text-xs">${formatMarkdown(step)}</div>`;
+            });
+            contentHtml += `</div>`;
+
+            document.getElementById('modal-content').innerHTML = contentHtml;
+            document.getElementById('detail-modal').classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('detail-modal').classList.add('hidden');
+        }
+
+        function formatMarkdown(text) {
+            return text.replace(/\*\*(.*?)\*\*/g, '<strong class="text-amber-400">$1</strong>');
+        }
+
+        function setupQuiz() {
+            if(currentQuizIndex >= quizData.length) {
+                document.getElementById('quiz-card-container').classList.add('hidden');
+                document.getElementById('quiz-complete').classList.remove('hidden');
+                document.getElementById('final-score-text').innerText = `You scored ${score} out of ${quizData.length} like a Master Electrician!`;
+                return;
+            }
+
+            document.getElementById('quiz-card-container').classList.remove('hidden');
+            document.getElementById('quiz-complete').classList.add('hidden');
+
+            const q = quizData[currentQuizIndex];
+            document.getElementById('quiz-progress').innerText = `Question ${currentQuizIndex + 1} of ${quizData.length}`;
+            document.getElementById('quiz-score').innerText = `Score: ${score}`;
+            document.getElementById('quiz-img').src = q.image;
+            document.getElementById('quiz-badge').innerText = q.badge;
+            document.getElementById('quiz-question').innerText = q.question;
+
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+            selectedAnswerIndex = null;
+            document.getElementById('quiz-explanation').classList.add('hidden');
+            document.getElementById('next-btn').classList.add('hidden');
+
+            q.options.forEach((opt, idx) => {
+                const btn = document.createElement('button');
+                btn.className = "w-full text-left px-4 py-3 rounded-xl bg-slate-950 border border-slate-800 hover:border-slate-700 text-xs text-slate-200 transition font-medium flex items-center justify-between";
+                btn.innerHTML = `<span>${opt}</span><span class="w-5 h-5 rounded-full border border-slate-700 flex items-center justify-center text-[10px] text-slate-500 font-mono">${String.fromCharCode(65 + idx)}</span>`;
+                btn.onclick = () => selectAnswer(idx, btn);
+                optionsContainer.appendChild(btn);
+            });
+        }
+
+        function selectAnswer(idx, btnElement) {
+            if(selectedAnswerIndex !== null) return; // already answered
+            selectedAnswerIndex = idx;
+            const q = quizData[currentQuizIndex];
+            const optionButtons = document.getElementById('quiz-options').children;
+
+            if(idx === q.correct) {
+                btnElement.className = "w-full text-left px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/40 text-xs text-emerald-300 font-medium flex items-center justify-between";
+                score++;
+            } else {
+                btnElement.className = "w-full text-left px-4 py-3 rounded-xl bg-rose-500/10 border border-rose-500/40 text-xs text-rose-300 font-medium flex items-center justify-between";
+                optionButtons[q.correct].className = "w-full text-left px-4 py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/40 text-xs text-emerald-300 font-medium flex items-center justify-between";
+            }
+
+            document.getElementById('quiz-score').innerText = `Score: ${score}`;
+            document.getElementById('explanation-text').innerText = q.explanation;
+            document.getElementById('quiz-explanation').classList.remove('hidden');
+            document.getElementById('next-btn').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            currentQuizIndex++;
+            setupQuiz();
+        }
+
+        function restartQuiz() {
+            currentQuizIndex = 0;
+            score = 0;
+            setupQuiz();
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
